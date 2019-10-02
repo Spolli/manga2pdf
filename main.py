@@ -13,12 +13,20 @@ manga_url = sys.argv[1]
 browser = webdriver.PhantomJS(executable_path='./driver/phantomjs.exe')
 # webdriver.Chrome('chromedriver.exe')
 pdf_index = 0
+splitIndex = 0
+
+folder_path = {
+    "img": "./tmp/img",
+    "pdf": "./tmp/pdf",
+    "pdfs": "./tmp/pdfs",
+    "output": "./output"
+}
 
 
 def __init__():
-    delFilefromFolder('./img')
-    delFilefromFolder('./pdf')
-    delFilefromFolder('./output')
+    delFilefromFolder(folder_path["img"])
+    delFilefromFolder(folder_path["pdf"])
+    delFilefromFolder(folder_path["pdfs"])
 
 
 '''
@@ -42,11 +50,18 @@ def remove_transparency(img, bg_colour=(255, 255, 255)):
 
 def mergePDF():
     merger = PdfFileMerger()
-    for pdf in reversed([(f'./pdf/{i}') for i in os.listdir('./pdf')]):
-        merger.append(PdfFileReader(open(pdf, 'rb')))
-    merger.write("./output/final.pdf")
+
+    tmp_index = 0
+
+    for pdf_subList in splitList(reversed([(f'{folder_path["pdf"]}/{i}') for i in os.listdir(folder_path['pdf'])])):
+        for pdf in pdf_subList:
+            merger.append(PdfFileReader(open(pdf, 'rb')))
+        merger.write(f"{folder_path['pdfs']}/{pdf_index:02}.pdf")
+        merger.close()
+    for tmp_pdf in [(f'{folder_path["pdfs"]}/{i}') for i in os.listdir(folder_path['pdfs'])]:
+        merger.append(PdfFileReader(open(tmp_pdf, 'rb')))
+    merger.write(f"{folder_path['output']}/final.pdf")
     merger.close()
-    delFilefromFolder('./pdf')
 
 
 def delFilefromFolder(folder_name):
@@ -58,6 +73,14 @@ def delFilefromFolder(folder_name):
         except Exception as e:
             print(e)
 
+def delPDFfromList(list_name):
+    for the_file in os.listdir(folder_name):
+        file_path = os.path.join(folder_path['pdf'], the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
 
 def img2pdfConvert():
     global pdf_index
@@ -67,6 +90,14 @@ def img2pdfConvert():
             f'./img/{i}') for i in os.listdir('./img')]))
     pdf_index += 1
 
+def convert2Pdf():
+    global pdf_index
+    pdf_file = Image.new(mode='RGB', size=(100, 100), color=0)
+    pdf_name = f'{folder_path["pdf"]}/{pdf_index:03}.pdf'
+    imList = [Image.open(f'{folder_path["img"]}/{i}') for i in os.listdir(folder_path["img"])]
+    pdf_file.save(pdf_name, "PDF" ,resolution=100.0, save_all=True, append_images=imList)
+    pdf_file.close()
+    pdf_index += 1
 
 def getImagesFromChapter(chapter_url):
     global prog_bar
@@ -75,28 +106,33 @@ def getImagesFromChapter(chapter_url):
     manga_images = soup.find_all('img', {'class': 'page-img'}, src=True)
     i = 0
     for image in manga_images:
-        name = f'./img/{i:02}.jpeg'
+        name = f'{folder_path["img"]}/{i:02}.jpeg'
         f = open(name, 'wb')
         f.write(requests.get(image.get('src')).content)
         f.close()
         i += 1
-    img2pdfConvert()
+    convert2Pdf()
+    delFilefromFolder(folder_path["img"])
     prog_bar.next()
+
+def clearFolders():
     delFilefromFolder('./img')
+    delFilefromFolder('./pdf')
+
+def splitList(my_list, split_condition=splitIndex):
+    return [my_list[x:x+split_condition] for x in range(0, len(my_list),split_condition)]       #split list every tot number
 
 
-def main():
-    global prog_bar
+if __name__ == '__main__':
+    global prog_bar, splitIndex
     page = requests.get(manga_url)
     soup = BeautifulSoup(page.text, 'html.parser')
     chapters_url = soup.find_all("a", {"class": "chapt"}, href=True)
-    prog_bar = Bar(' - Downloading - ', max=len(chapters_url))
+    splitIndex = len(chapters_url) < 50 ? len(chapters_url) / 4 : 1     #split if chapers are > 50 else not split
+    prog_bar = Bar('\t\tDownloading\t\t', max=len(chapters_url))
     for chapter in chapters_url:
         getImagesFromChapter(f'https://bato.to{chapter.get("href")}')
     prog_bar.finish()
     print('Merging pdfs...')
     mergePDF()
-
-
-if __name__ == '__main__':
-    main()
+    clearFolders()
