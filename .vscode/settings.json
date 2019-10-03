@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "manga2pdf\\Scripts\\python.exe"
+    "python.pythonPath": "manga2pdf\\Scripts\\python.exe",
+    "editor.renderWhitespace": "all"
 }
