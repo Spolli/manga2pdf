@@ -103,7 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-manga2pdf
+manga2pdf/
 src/driver
 ghostdriver.log
 test.py
