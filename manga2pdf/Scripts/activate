@@ -46,7 +46,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="$(if [ "$OSTYPE" "==" "cygwin" ]; then cygpath -u 'C:\Users\Utente\Desktop\Byte18\DevSpace\manga2pdf\manga2pdf\manga2pdf'; else echo '/C/Users/Utente/Desktop/Byte18/DevSpace/manga2pdf/manga2pdf/manga2pdf'; fi;)"
+VIRTUAL_ENV="$(if [ "$OSTYPE" "==" "cygwin" ]; then cygpath -u 'C:\Users\Utente\Desktop\Byte18\DevSpace\python-project\manga2pdf\manga2pdf'; else echo '/C/Users/Utente/Desktop/Byte18/DevSpace/python-project/manga2pdf/manga2pdf'; fi;)"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

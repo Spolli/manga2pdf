@@ -1,6 +1,6 @@
 @echo off
 
-set "VIRTUAL_ENV=C:\Users\Utente\Desktop\Byte18\DevSpace\manga2pdf\manga2pdf\manga2pdf"
+set "VIRTUAL_ENV=C:\Users\Utente\Desktop\Byte18\DevSpace\python-project\manga2pdf\manga2pdf"
 
 if defined _OLD_VIRTUAL_PROMPT (
     set "PROMPT=%_OLD_VIRTUAL_PROMPT%"
